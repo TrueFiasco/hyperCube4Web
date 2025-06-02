@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Cube Demo</title>
+  <style>
+    /* Make body fill viewport and remove scroll bars */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    canvas {
+      display: block; /* removes default inline spacing */
+    }
+  </style>
+</head>
+<body>
+  <canvas id="cube-canvas"></canvas>
+
+  <!-- 1. Load Three.js and OrbitControls from a CDN -->
+  <script src="https://unpkg.com/three@0.152.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.152.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- 2. Main script: set up scene, camera, renderer, controls, and animation -->
+  <script>
+    // Immediately-invoked function to avoid polluting global scope
+    (function() {
+      // Grab the canvas and set up the renderer
+      const canvas = document.getElementById('cube-canvas');
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: false
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+
+      // Create a new scene and a camera
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.set(2, 2, 5);
+
+      // Add basic lighting: ambient + directional
+      const ambientLight = new THREE.AmbientLight(0x888888);
+      scene.add(ambientLight);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(5, 10, 7);
+      scene.add(dirLight);
+
+      // Create a cube geometry and material, then add it to the scene
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshStandardMaterial({ color: 0x44aa88 });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+
+      // Set up OrbitControls so the user can click-and-drag to rotate
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;    // smoothen motion
+      controls.dampingFactor = 0.05;
+      controls.enablePan = false;       // disable panning
+      controls.minDistance = 2;
+      controls.maxDistance = 10;
+
+      // Handle window-resize: keep canvas full-screen
+      function onWindowResize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', onWindowResize);
+      onWindowResize(); // initial sizing
+
+      // Animation/render loop
+      function animate() {
+        controls.update();             // required if enableDamping = true
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
